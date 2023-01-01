@@ -109,7 +109,9 @@ export default function CreateCategory() {
                                         <Col>
                                             <Form.Group controlId="Status" className="mb-3">
                                                 <Form.Label>Status</Form.Label>
-                                                <Form.Select aria-label="Select Status">
+                                                <Form.Select aria-label="Select Status" onChange={(event)=>{
+                                                    setStatus(event.target.value)
+                                                }}>
                                                     <option value="1">Active</option>
                                                     <option value="0">InActive</option>
                                                 </Form.Select>

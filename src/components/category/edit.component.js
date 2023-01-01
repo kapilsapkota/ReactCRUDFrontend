@@ -15,7 +15,8 @@ export default function EditCategory() {
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
     const [image, setImage] = useState(null)
-    const [status, setStatus] = useState(true)
+    const [status, setStatus] = useState()
+    const [existingImgSrc, setExistingImgSrc] = useState(null)
     const [validationError,setValidationError] = useState({})
 
     useEffect(()=>{
@@ -24,10 +25,12 @@ export default function EditCategory() {
 
     const fetchCategory = async () => {
         await axios.get(`http://localhost:8000/api/category/${id}`).then(({data})=>{
-            const { title, description } = data.category
+            const { title, description, status, image } = data.category
             setTitle(title)
             setDescription(description)
             setStatus(status)
+            setImage(image)
+            setExistingImgSrc(`http://localhost:8000/storage/category/image/${image}`)
         }).catch(({response:{data}})=>{
             Swal.fire({
                 text:data.message,
@@ -38,7 +41,19 @@ export default function EditCategory() {
 
     const changeHandler = (event) => {
         setImage(event.target.files[0]);
+        // Assuming only image
+       changeImage(event)
     };
+
+    const changeImage = (event) =>{
+        var file = event.target.files[0];
+        var reader = new FileReader();
+        var url = reader.readAsDataURL(file);
+
+        reader.onloadend = function (e) {
+            setExistingImgSrc(reader.result)
+        };
+    }
 
     const updateCategory = async (e) => {
         e.preventDefault();
@@ -122,6 +137,8 @@ export default function EditCategory() {
                                             <Form.Group controlId="Image" className="mb-3">
                                                 <Form.Label>Image</Form.Label>
                                                 <Form.Control type="file" onChange={changeHandler} />
+                                                <Form.Label className="mt-2">Existing Image</Form.Label>
+                                                <img className="mt-2" style={{ maxHeight : 200 }} width="50%" src={existingImgSrc} />
                                             </Form.Group>
                                         </Col>
                                     </Row>
@@ -129,12 +146,12 @@ export default function EditCategory() {
                                         <Col>
                                             <Form.Group controlId="Status" className="mb-3">
                                                 <Form.Label>Status</Form.Label>
-                                                <Form.Check
-                                                    type="switch"
-                                                    id="custom-switch"
-                                                    label="Check this switch to active product"
-                                                    checked={status}
-                                                />
+                                                <Form.Select aria-label="Select Status" value={status} onChange={(event)=>{
+                                                    setStatus(event.target.value)
+                                                }}>
+                                                    <option value="1">Active</option>
+                                                    <option value="0">InActive</option>
+                                                </Form.Select>
                                             </Form.Group>
                                         </Col>
                                     </Row>
