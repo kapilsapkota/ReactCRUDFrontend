@@ -1,12 +1,45 @@
 import {Card, Form} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import {Link, Outlet} from "react-router-dom";
+import {useRef} from "react";
+import axiosClient from "../axios-client";
+import {useStateContext} from "../contexts/ContextProvider";
 
 export default function SignUp(){
 
-    const postSignUp = (e) => {
+    const nameRef = useRef();
+    const emailRef = useRef();
+    const passwordRef = useRef();
+    const passwordConfirmationRef  = useRef()
+
+    //place user Token in browser local storage
+    const {setUser, setToken} = useStateContext()
+
+    const postSignUp =  (e) => {
       e.preventDefault()
 
+        //gather data in payload from form
+        const payload = {
+          name : nameRef.current.value,
+          email : emailRef.current.value,
+          password : passwordRef.current.value,
+          password_confirmation : passwordConfirmationRef.current.value,
+        }
+
+        //use axiosClient from axios client
+        axiosClient.post('/signup', payload)
+            .then(({data}) => {
+                //if success set the user and token
+                setUser(data.user)
+                setToken(data.token)
+            })
+            .catch(err =>{
+                //if error catch the validation messages or error
+                const response = err.response;
+                if(response && response.status === 422){
+                    console.log(response.data.errors)
+                }
+            })
     }
 
 return (
@@ -22,12 +55,12 @@ return (
 
                 <Form.Group className="mb-3" controlId="formBasicName">
                     <Form.Label>Full Name</Form.Label>
-                    <Form.Control type="text" placeholder="Enter name" />
+                    <Form.Control ref={nameRef} type="text" placeholder="Enter name" />
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Email address</Form.Label>
-                    <Form.Control type="email" placeholder="Enter email" />
+                    <Form.Control ref={emailRef} type="email" placeholder="Enter email" />
                     <Form.Text className="text-muted">
                         We'll never share your email with anyone else.
                     </Form.Text>
@@ -35,12 +68,12 @@ return (
 
                 <Form.Group className="mb-3" controlId="formBasicPassword">
                     <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" placeholder="Enter password.." />
+                    <Form.Control ref={passwordRef} type="password" placeholder="Enter password.." />
                 </Form.Group>
 
-                <Form.Group className="mb-3" controlId="formBasicPassword">
+                <Form.Group className="mb-3" controlId="formBasicPasswordConfirmation">
                     <Form.Label>Confirm Password</Form.Label>
-                    <Form.Control type="password" placeholder="Retype password.." />
+                    <Form.Control ref={passwordConfirmationRef} type="password" placeholder="Retype password.." />
                 </Form.Group>
 
                 <Button variant="primary" type="submit">
